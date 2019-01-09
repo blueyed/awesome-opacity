@@ -13,8 +13,7 @@
 -- awful.button({ modkey, "Control" }, 4, function (c) opacity.adjust(c, -0.01) end, function (c) end),
 -- awful.button({ modkey, "Control" }, 5, function (c) opacity.adjust(c,  0.01) end, function (c) end))
 
-local M = {}
-M = {
+local M = {
     opacity = {
         unfocused_screen = 1,
         -- unfocused_screen_last_client = 1,
@@ -54,6 +53,7 @@ end
 
 M.get_opacity_for_client = function(c)
     -- Opacity for focused client and its childs.
+    local opacity
     if capi.client.focus
         and (capi.client.focus == c
             or (c == last_focused_client
@@ -74,7 +74,7 @@ M.get_opacity_for_client = function(c)
 end
 
 M.autoset_opacity = function(c, opacity)
-    local opacity = opacity or M.get_opacity_for_client(c)
+    opacity = opacity or M.get_opacity_for_client(c)
     for _,v in ipairs(locked_opacity) do
         if c == v then
             -- TODO: provide a way to unlock it.
@@ -101,7 +101,7 @@ client.connect_signal("focus", function(c)
                 -- bnote(bdump({"autoset", c=_c, opacity=_c.opacity}))
             end
             -- Opacity=1 for all clients when focus moved to another screen.
-            local clients = awful.client.visible(last_focused_client.screen)
+            clients = awful.client.visible(last_focused_client.screen)
             for _, _c in pairs(clients) do
                 M.autoset_opacity(_c, M.opacity.unfocused_screen)
             end
