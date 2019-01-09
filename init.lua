@@ -22,6 +22,8 @@ local M = {
         unfocused = 0.95,
     }
 }
+-- Clients with manually adjusted opacity.
+-- TODO: provide a way to unlock it.
 local locked_opacity = {}
 
 local capi = {
@@ -77,8 +79,6 @@ M.autoset_opacity = function(c, opacity)
     opacity = opacity or M.get_opacity_for_client(c)
     for _,v in ipairs(locked_opacity) do
         if c == v then
-            -- TODO: provide a way to unlock it.
-            -- bnote("opacity locked for "..tostring(c))
             return
         end
     end
@@ -88,7 +88,6 @@ end
 
 -- Opacity on (un)focus.
 client.connect_signal("focus", function(c)
-    -- bnote(bdump({last_focused_client, c.screen}))
     -- Handle focus switch across screens.
     next_focused_client = c
     if last_focused_client
@@ -98,7 +97,6 @@ client.connect_signal("focus", function(c)
             local clients = awful.client.visible(c.screen)
             for _, _c in pairs(clients) do
                 M.autoset_opacity(_c)
-                -- bnote(bdump({"autoset", c=_c, opacity=_c.opacity}))
             end
             -- Opacity=1 for all clients when focus moved to another screen.
             clients = awful.client.visible(last_focused_client.screen)
@@ -107,19 +105,15 @@ client.connect_signal("focus", function(c)
             end
             -- last_focused_client.opacity = M.opacity.unfocused_screen_last_client
     else
-        -- bnote("focus: " .. c.name .. " / prev: " .. last_focused_client.name)
         -- Handle last focused client.
-        if last_focused_client then
+        if last_focused_client and not last_focused_client.ontop then
             M.autoset_opacity(last_focused_client)
         end
         M.autoset_opacity(c)
-        -- bnote("opacity: " .. c.opacity .. " / " .. last_focused_client.opacity)
     end
-    -- bnote(c.opacity)
 end)
 client.connect_signal("unfocus", function(c)
     last_focused_client = c
-    -- bnote("unfocus: "..c.name)
 end)
 client.connect_signal("unmanage", function(c)
     if c == last_focused_client then
